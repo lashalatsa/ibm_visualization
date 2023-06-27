@@ -1,0 +1,643 @@
+მოცემულია n5.txt ფაილი.  დაწერეთ პროგრამული კოდი, რომელიც ფაილის დასაწყისში ჩაამატებს ტექსტს: COVID-19 vaccines:, 
+ხოლო ფაილის ბოლოს, ახალ სტრიქონზე  - AstraZeneca-ს. ( 3 ქულა), დათვალეთ პროგრამულად ფაილში სასვენი ნიშნების რაოდენობა (, . - : )  ( 2 ქულა)
+დაადგინეთ სასვენი ნიშნების %-ული წილი ტექსტის სიმბოლოების რაოდენობაში. ( 3 ქულა)
+
+#include <stdio.h>
+#include <ctype.h>
+
+int countPunctuationMarks(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return -1;
+    }
+
+    int count = 0;
+    int ch;
+    while ((ch = fgetc(file)) != EOF) {
+        if (ispunct(ch)) {
+            count++;
+        }
+    }
+
+    fclose(file);
+    return count;
+}
+
+int main() {
+    const char *filename = "n5.txt";
+
+    // Task 1: Adding text to the beginning and end of the file
+    FILE *file = fopen(filename, "r+");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return 1;
+    }
+
+    // Move the file pointer to the beginning
+    fseek(file, 0, SEEK_SET);
+
+    // Insert "COVID-19 vaccines:" at the beginning of the file
+    fprintf(file, "COVID-19 vaccines:");
+
+    // Move the file pointer to the end
+    fseek(file, 0, SEEK_END);
+
+    // Insert " AstraZeneca" at the end of the file on a new line
+    fprintf(file, "\nAstraZeneca");
+
+    fclose(file);
+
+    // Task 2: Counting the number of punctuation marks
+    int punctuationCount = countPunctuationMarks(filename);
+    printf("Number of punctuation marks: %d\n", punctuationCount);
+
+    // Task 3: Calculating the percentage of punctuation marks
+    FILE *file2 = fopen(filename, "r");
+    if (file2 == NULL) {
+        printf("Failed to open the file.\n");
+        return 1;
+    }
+
+    int totalCharacters = 0;
+    int punctuationCharacters = 0;
+    int ch2;
+    while ((ch2 = fgetc(file2)) != EOF) {
+        totalCharacters++;
+        if (ispunct(ch2)) {
+            punctuationCharacters++;
+        }
+    }
+
+    fclose(file2);
+
+    double punctuationPercentage = (double)punctuationCharacters / totalCharacters * 100;
+    printf("Percentage of punctuation marks: %.2f%%\n", punctuationPercentage);
+
+    return 0;
+}
+
+
+
+
+
+
+
+შემთხვევითი წესით უნდა შეირჩნენ სტუდენტები კონფერენციაზე მონაწილეობისათვის, student. txt ფაილში ჩაწერილია სტუდენტების გვარები და სახელები. 
+წაიკითხეთ მონაცემები კონსოლზე ( 2 ქულა)
+მიიღეთ 5 შემთხვევითი რიცხვი 1-დან 20-მდე დიაპაზონში (2 ქულა)
+შემთხვევითი რიცხვების მიხედვით ამოარჩიეთ შესაბამისი ნომრის მქონე სტუდენტები ( 3 ქულა)
+შერჩეული სტუდენტების გვარები და სახელები გამოიტანეთ კონსოლზე (1 ქულა)
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_STUDENTS 20
+#define MAX_NAME_LENGTH 50
+
+typedef struct {
+    char name[MAX_NAME_LENGTH];
+    char surname[MAX_NAME_LENGTH];
+} Student;
+
+void readStudentsFromFile(const char* filename, Student students[], int* studentCount) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return;
+    }
+
+    int count = 0;
+    while (fscanf(file, "%s %s", students[count].name, students[count].surname) != EOF) {
+        count++;
+        if (count >= MAX_STUDENTS) {
+            printf("Maximum number of students reached.\n");
+            break;
+        }
+    }
+
+    *studentCount = count;
+    fclose(file);
+}
+
+int* generateRandomNumbers(int count, int maxRange) {
+    int* numbers = (int*)malloc(count * sizeof(int));
+    if (numbers == NULL) {
+        printf("Memory allocation failed.\n");
+        return NULL;
+    }
+
+    srand(time(NULL));
+
+    for (int i = 0; i < count; i++) {
+        numbers[i] = rand() % maxRange + 1;
+    }
+
+    return numbers;
+}
+
+void selectRandomStudents(Student students[], int studentCount, int randomNumbers[], int randomNumberCount, Student selectedStudents[], int* selectedCount) {
+    int count = 0;
+
+    for (int i = 0; i < randomNumberCount; i++) {
+        int index = randomNumbers[i] - 1;
+
+        if (index >= 0 && index < studentCount) {
+            selectedStudents[count++] = students[index];
+        }
+    }
+
+    *selectedCount = count;
+}
+
+void displayStudents(Student students[], int count) {
+    for (int i = 0; i < count; i++) {
+        printf("%s %s\n", students[i].name, students[i].surname);
+    }
+}
+
+int main() {
+    const char* filename = "students.txt";
+    const int randomNumberCount = 5;
+    const int maxRange = 20;
+
+    Student students[MAX_STUDENTS];
+    int studentCount = 0;
+
+    readStudentsFromFile(filename, students, &studentCount);
+
+    int* randomNumbers = generateRandomNumbers(randomNumberCount, maxRange);
+    if (randomNumbers == NULL) {
+        return 1;
+    }
+
+    Student selectedStudents[randomNumberCount];
+    int selectedCount = 0;
+
+    selectRandomStudents(students, studentCount, randomNumbers, randomNumberCount, selectedStudents, &selectedCount);
+
+    printf("Selected students:\n");
+    displayStudents(selectedStudents, selectedCount);
+
+    free(randomNumbers);
+
+    return 0;
+}
+
+
+
+
+
+
+
+პოინტერების მასივის გამოყენებით შეასრულეთ გადართვა ორ ფუნქციაზე:
+პირველი ფუნქცია - გამოითვლის გადაცემული მნიშვნელობების საშუალო კვადრატულ გადახრას : 
+მეორე ფუნქცია - გამოითვლის გადაცემული მნიშვნელობების მედიანას
+შენიშვნა: გადასაცემია 3 მთელი ტიპის მნიშვნელობა
+
+#include <stdio.h>
+#include <stdlib.h>
+
+float calculateMeanSquareDeviation(int a, int b, int c) {
+    float mean = (a + b + c) / 3.0f;
+    float deviation = ((a - mean) * (a - mean) + (b - mean) * (b - mean) + (c - mean) * (c - mean)) / 3.0f;
+    return deviation;
+}
+
+int compareIntegers(const void* a, const void* b) {
+    return (*(int*)a - *(int*)b);
+}
+
+float calculateMedian(int a, int b, int c) {
+    int values[] = { a, b, c };
+    qsort(values, 3, sizeof(int), compareIntegers);
+    return (values[1] + values[2]) / 2.0f;
+}
+
+int main() {
+    int a = 3;
+    int b = 7;
+    int c = 5;
+
+    float (*functionPointers[2])(int, int, int) = { calculateMeanSquareDeviation, calculateMedian };
+
+    for (int i = 0; i < 2; i++) {
+        float result = functionPointers[i](a, b, c);
+
+        if (i == 0) {
+            printf("Mean Square Deviation: %.2f\n", result);
+        } else {
+            printf("Median: %.2f\n", result);
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+შექმენით სტრუქტურა მონაცემებით: ზღვის დასახელება და სიღრმე (1 ქულა).  Seas.txt ფაილი შეიცავს ინფორმაციას სამი ზღვის შესახებ.
+ წაიკითხეთ ფაილიდან მონაცემები (3 ქულა), დაბეჭდეთ უდიდესი სიღრმის მქონე ზღვის მონაცემები (3 ქულა).
+ მიღებული შედეგი შეინახეთ ფაილში (2 ქულა)
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_SEAS 3
+#define MAX_NAME_LENGTH 50
+
+typedef struct {
+    char name[MAX_NAME_LENGTH];
+    float depth;
+} Sea;
+
+void readSeasFromFile(const char* filename, Sea seas[], int* seaCount) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return;
+    }
+
+    int count = 0;
+    while (fscanf(file, "%s %f", seas[count].name, &seas[count].depth) != EOF) {
+        count++;
+        if (count >= MAX_SEAS) {
+            printf("Maximum number of seas reached.\n");
+            break;
+        }
+    }
+
+    *seaCount = count;
+    fclose(file);
+}
+
+void printSeasWithGreatestDepth(const Sea seas[], int seaCount) {
+    int maxDepthIndex = 0;
+
+    for (int i = 1; i < seaCount; i++) {
+        if (seas[i].depth > seas[maxDepthIndex].depth) {
+            maxDepthIndex = i;
+        }
+    }
+
+    printf("Sea with greatest depth:\n");
+    printf("Name: %s\n", seas[maxDepthIndex].name);
+    printf("Depth: %.2f\n", seas[maxDepthIndex].depth);
+}
+
+void saveSeasWithGreatestDepthToFile(const Sea seas[], int seaCount, const char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return;
+    }
+
+    int maxDepthIndex = 0;
+
+    for (int i = 1; i < seaCount; i++) {
+        if (seas[i].depth > seas[maxDepthIndex].depth) {
+            maxDepthIndex = i;
+        }
+    }
+
+    fprintf(file, "Sea with greatest depth:\n");
+    fprintf(file, "Name: %s\n", seas[maxDepthIndex].name);
+    fprintf(file, "Depth: %.2f\n", seas[maxDepthIndex].depth);
+
+    fclose(file);
+}
+
+int main() {
+    const char* filename = "Seas.txt";
+    const char* outputFilename = "Result.txt";
+
+    Sea seas[MAX_SEAS];
+    int seaCount = 0;
+
+    readSeasFromFile(filename, seas, &seaCount);
+    printSeasWithGreatestDepth(seas, seaCount);
+    saveSeasWithGreatestDepthToFile(seas, seaCount, outputFilename);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+დაწერეთ პროგამული კოდი, რომელიც უზრუნველყოფს ერთგანზომილებიან მასივში კონკრეტული ელემენტის პოვნას pointer-ის გამოყენებით. გამოიყენეთ ფუნქცია.
+Enter size of array: მაგ.   5
+Enter elements in array: 10 20 30 40 50 
+Enter element to search: 40
+40 is found at 4 position.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int findElementPosition(int *array, int size, int element) {
+    for (int i = 0; i < size; i++) {
+        if (*array == element) {
+            return i + 1;
+        }
+        array++;
+    }
+    return -1; // Element not found
+}
+
+int main() {
+    int size;
+    printf("Enter size of array: ");
+    scanf("%d", &size);
+
+    int *array = (int *)malloc(size * sizeof(int));
+    if (array == NULL) {
+        printf("Memory allocation failed.\n");
+        return 1;
+    }
+
+    printf("Enter elements in array: ");
+    for (int i = 0; i < size; i++) {
+        scanf("%d", &array[i]);
+    }
+
+    int element;
+    printf("Enter element to search: ");
+    scanf("%d", &element);
+
+    int position = findElementPosition(array, size, element);
+
+    if (position != -1) {
+        printf("%d is found at %d-th position.\n", element, position);
+    } else {
+        printf("%d is not found in the array.\n", element);
+    }
+
+    free(array);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+დაწერეთ პროგრამა, რომელიც უზრუნველყოფს რამდენიმე სტრიქონის შეტანას. შეტანილი სტრიქონები ჩაწერეთ ფაილში. დაადგინეთ ყველაზე მოკლე სტრიქონი და
+ გამოიტანეთ მისი ნომერი ეკრანზე. თუ ასეთი სტრიქონი რამდენიმეა, მაშინ ეკრანზე გამოიტანეთ ყველა ასეთი სიგრძის სტრიქონი. 
+ფაილში დაამატეთ სტრიქონი: ყველაზე მოკლე სტრიქონის სიგრძეა ...(მიუთითეთ გამოთვლილი მნიშვნელობა). მაგ.: the smallest string – length(string)=45; 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_STR_LENGTH 100
+
+void writeStringsToFile(FILE* file) {
+    char line[MAX_STR_LENGTH];
+
+    printf("Enter strings (Enter 'done' to finish):\n");
+
+    while (1) {
+        fgets(line, sizeof(line), stdin);
+        line[strcspn(line, "\n")] = '\0';
+
+        if (strcmp(line, "done") == 0) {
+            break;
+        }
+
+        fprintf(file, "%s\n", line);
+    }
+}
+
+void findShortestStrings(FILE* file, int* shortestLength) {
+    char line[MAX_STR_LENGTH];
+    int shortestCount = 0;
+    int firstShortest = 1;
+
+    rewind(file);
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        line[strcspn(line, "\n")] = '\0';
+
+        int length = strlen(line);
+
+        if (firstShortest || length < *shortestLength) {
+            *shortestLength = length;
+            shortestCount = 1;
+            firstShortest = 0;
+        } else if (length == *shortestLength) {
+            shortestCount++;
+        }
+    }
+
+    printf("Number of shortest strings: %d\n", shortestCount);
+}
+
+void addLengthStringToFile(FILE* file, int shortestLength) {
+    fprintf(file, "The shortest string length is %d.\n", shortestLength);
+}
+
+int main() {
+    FILE* file;
+    char* filename = "strings.txt";
+    int shortestLength = MAX_STR_LENGTH;
+
+    file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return 1;
+    }
+
+    writeStringsToFile(file);
+    fclose(file);
+
+    file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return 1;
+    }
+
+    findShortestStrings(file, &shortestLength);
+    printf("Shortest string length: %d\n", shortestLength);
+
+    rewind(file);
+    addLengthStringToFile(file, shortestLength);
+    fclose(file);
+
+    return 0;
+}
+
+
+
+
+
+
+
+წაიკითხეთ text_shifr.txt ფაილიდან ტექსტი რომელიც დაშიფრულია. დაადგინეთ ტექსტის სიგრძე. ეკრანზე გამოიტანეთ მიმდინარე თარიღი და დრო. 
+აღადგინეთ საწყისი ტექსტი, თუ დაშიფვრისათვის გამოყენებულია შემდეგი კოდირება.
+ხმოვნები: a - #, e- @, o-!, u-$, I -%
+რამდენიმე თანხმოვანი:c-(, k-), b -*, d -&, t - ^
+მიღებული  ტექსტი და მიმდინარე თარიღი ჩაწერეთ ახალ ფაილში. #include <stdio.h>
+#include <time.h>
+
+void decryptText(char *text) {
+    char *ptr = text;
+
+    while (*ptr != '\0') {
+        switch (*ptr) {
+            case '#':
+                *ptr = 'a';
+                break;
+            case '@':
+                *ptr = 'e';
+                break;
+            case '!':
+                *ptr = 'o';
+                break;
+            case '$':
+                *ptr = 'u';
+                break;
+            case '%':
+                *ptr = 'I';
+                break;
+            case '(':
+                *ptr = 'c';
+                break;
+            case ')':
+                *ptr = 'k';
+                break;
+            case '*':
+                *ptr = 'b';
+                break;
+            case '&':
+                *ptr = 'd';
+                break;
+            case '^':
+                *ptr = 't';
+                break;
+        }
+        ptr++;
+    }
+}
+
+int main() {
+    FILE *inputFile, *outputFile;
+    char text[1000];
+    time_t currentTime;
+    struct tm *localTime;
+    char dateStr[100];
+
+    // Read encrypted text from file
+    inputFile = fopen("text_shifr.txt", "r");
+    if (inputFile == NULL) {
+        printf("Failed to open the input file.\n");
+        return 1;
+    }
+    fgets(text, sizeof(text), inputFile);
+    fclose(inputFile);
+
+    // Decrypt the text
+    decryptText(text);
+
+    // Get current date and time
+    currentTime = time(NULL);
+    localTime = localtime(&currentTime);
+    strftime(dateStr, sizeof(dateStr), "%Y-%m-%d %H:%M:%S", localTime);
+
+    // Write decrypted text and current date to a new file
+    outputFile = fopen("decrypted_text.txt", "w");
+    if (outputFile == NULL) {
+        printf("Failed to open the output file.\n");
+        return 1;
+    }
+    fprintf(outputFile, "Decrypted Text:\n%s\n\nCurrent Date and Time: %s\n", text, dateStr);
+    fclose(outputFile);
+
+    printf("Decryption and file writing completed successfully.\n");
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+dat.txt ტექსტური ფაილი შეიცავს  სიტყვებს ინგლისურ ენაზე, ერთ სტრიქონზე ერთი სიტყვა, არაუმეტეს 40 სიტყვისა.
+გადაწერეთ  სხვა ფაილში ის სიტყვები, რომლებიც იწყება “b” სიმბოლოთი, დათვალეთ საწყის ფაილში სიტყვების და სიმბოლოების რაოდენობა. 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_WORD_LENGTH 100
+
+int main() {
+    FILE *inputFile, *outputFile;
+    char word[MAX_WORD_LENGTH];
+    int wordCount = 0;
+    int charCount = 0;
+
+    // Open the input file
+    inputFile = fopen("dat.txt", "r");
+    if (inputFile == NULL) {
+        printf("Failed to open the input file.\n");
+        return 1;
+    }
+
+    // Open the output file
+    outputFile = fopen("words_starting_with_b.txt", "w");
+    if (outputFile == NULL) {
+        printf("Failed to open the output file.\n");
+        fclose(inputFile);
+        return 1;
+    }
+
+    // Read words from the input file, copy words starting with "b" to the output file,
+    // and count the number of words and characters in the input file
+    while (fgets(word, sizeof(word), inputFile) != NULL) {
+        word[strcspn(word, "\n")] = '\0';
+
+        // Increment the word count
+        wordCount++;
+
+        // Increment the character count
+        charCount += strlen(word);
+
+        // Check if the word starts with "b"
+        if (word[0] == 'b') {
+            // Write the word to the output file
+            fprintf(outputFile, "%s\n", word);
+        }
+    }
+
+    // Close the input and output files
+    fclose(inputFile);
+    fclose(outputFile);
+
+    // Print the number of words and characters in the input file
+    printf("Number of words in the original file: %d\n", wordCount);
+    printf("Number of characters in the original file: %d\n", charCount);
+
+    printf("Words starting with 'b' have been copied to the file 'words_starting_with_b.txt'.\n");
+
+    return 0;
+}
+
+
+
